@@ -28,7 +28,9 @@ echo "File added to first-level subfolders only!"
 rm -f "$SOURCE_FILE"
 echo "Deleted source file: $SOURCE_FILE"
 
-# Delete the script itself
-SCRIPT_PATH=$(realpath "$0")
-rm -f "$SCRIPT_PATH"
-echo "Deleted script file: $SCRIPT_PATH"
+# # Delete the script itself
+# SCRIPT_PATH=$(realpath "$0")
+# rm -f "$SCRIPT_PATH"
+# echo "Deleted script file: $SCRIPT_PATH"
+
+# Uncomment the above lines to delete the script itself after execution
