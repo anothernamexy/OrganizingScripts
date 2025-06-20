@@ -2,9 +2,11 @@
 
 # Use the directory where the script is executed as the target directory
 TARGET_DIRECTORY=$(pwd)
+cd "$TARGET_DIRECTORY"
 
 # Get only the first-level subdirectories in the target directory and loop safely
-find "$TARGET_DIRECTORY" -mindepth 1 -maxdepth 1 -type d -print0 | while IFS= read -r -d '' SUBFOLDER; do
+find "." -mindepth 1 -maxdepth 1 -type d -print0 | while IFS= read -r -d '' SUBFOLDER; do
+    DESTINATION_PATH="$SUBFOLDER/$SUBFOLDER"
     zip -0 -r "${SUBFOLDER}.zip" "$SUBFOLDER"
     if [ $? -eq 0 ]; then
         echo "Zipped folder to: ${SUBFOLDER}.zip"
