@@ -24,24 +24,42 @@ find "$TARGET_DIRECTORY" -mindepth 1 -maxdepth 1 -type d -print0 | while IFS= re
         fi
     fi
 
-    # Find image files in the subfolder
+    # Find all image files in this subfolder and all subfolders (robust, explicit, correct grouping)
     IMAGE_FILES=()
-    for ext in $IMAGE_EXTENSIONS; do
-        while IFS= read -r -d $'\0' file; do
-            IMAGE_FILES+=("$file")
-        done < <(find "$SUBFOLDER" -maxdepth 1 -type f \( -iname "*.$ext" \) -print0)
-    done
+    while IFS= read -r -d $'\0' file; do
+        IMAGE_FILES+=("$file")
+    done < <(find "$SUBFOLDER" -type f \
+        \( -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.png" -o -iname "*.gif" -o -iname "*.bmp" -o -iname "*.webp" -o -iname "*.tiff" -o -iname "*.svg" \) \
+        -print0)
 
-    # If there are image files, zip them (name after subfolder)
+    # If there are image files, zip them (preserve relative paths inside the zip, handle spaces)
     if [ ${#IMAGE_FILES[@]} -gt 0 ]; then
         ZIP_NAME="$SUBFOLDER/${BASENAME}.zip"
-        zip -j -0 "$ZIP_NAME" "${IMAGE_FILES[@]}"
+        (cd "$SUBFOLDER" && \
+            printf '%s\0' "${IMAGE_FILES[@]}" | xargs -0 -I{} realpath --relative-to="$SUBFOLDER" "{}" | zip -0 -r "${BASENAME}.zip" -@
+        )
         if [ $? -eq 0 ]; then
             echo "Zipped images to: $ZIP_NAME"
+            # Delete the source image files
+            for img in "${IMAGE_FILES[@]}"; do
+                rm -f -- "$img"
+            done
+            echo "Deleted source images in $SUBFOLDER and subfolders."
         else
             echo "Error: Failed to zip images in $SUBFOLDER" >&2
         fi
     fi
+
+    # Move video files in deeper subfolders to the first-level subfolder, prefixing with their relative path
+    find "$SUBFOLDER" -mindepth 2 -type f \
+        \( -iname "*.mp4" -o -iname "*.mov" -o -iname "*.avi" -o -iname "*.mkv" -o -iname "*.webm" -o -iname "*.flv" -o -iname "*.wmv" -o -iname "*.m4v" \) \
+        -print0 | while IFS= read -r -d '' VIDEOFILE; do
+        RELPATH="${VIDEOFILE#$SUBFOLDER/}"
+        NEWNAME="${RELPATH//\//_}"
+        DEST="$SUBFOLDER/$NEWNAME"
+        mv "$VIDEOFILE" "$DEST"
+        echo "Moved video $VIDEOFILE to $DEST"
+    done
 
     # Check for video files and create .forcegallery if found
     VIDEO_FOUND=0
