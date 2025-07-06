@@ -83,3 +83,9 @@ find "$TARGET_DIRECTORY" -mindepth 1 -maxdepth 1 -type d -print0 | while IFS= re
 done
 
 echo "Done processing subfolders!"
+
+# # Delete the script itself after execution
+# echo "Deleting script: $0"
+# rm -- "$0"
+
+# Uncomment the above lines to delete the script itself after execution
