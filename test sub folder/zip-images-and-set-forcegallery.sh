@@ -32,14 +32,14 @@ find "$TARGET_DIRECTORY" -mindepth 1 -maxdepth 1 -type d -print0 | while IFS= re
         \( -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.png" -o -iname "*.gif" -o -iname "*.bmp" -o -iname "*.webp" -o -iname "*.tiff" -o -iname "*.svg" \) \
         -print0)
 
-    # If there are image files, zip them (preserve relative paths inside the zip, handle spaces)
+    # If there are image files, zip them as .cbz (preserve relative paths inside the zip, handle spaces)
     if [ ${#IMAGE_FILES[@]} -gt 0 ]; then
-        ZIP_NAME="$SUBFOLDER/${BASENAME}.zip"
+        CBZ_NAME="$TARGET_DIRECTORY/${BASENAME}.cbz"
         (cd "$SUBFOLDER" && \
-            printf '%s\0' "${IMAGE_FILES[@]}" | xargs -0 -I{} realpath --relative-to="$SUBFOLDER" "{}" | zip -0 -r "${BASENAME}.zip" -@
+            printf '%s\0' "${IMAGE_FILES[@]}" | xargs -0 -I{} realpath --relative-to="$SUBFOLDER" "{}" | zip -0 -r "$CBZ_NAME" -@
         )
         if [ $? -eq 0 ]; then
-            echo "Zipped images to: $ZIP_NAME"
+            echo "Zipped images to: $CBZ_NAME"
             # Delete the source image files
             for img in "${IMAGE_FILES[@]}"; do
                 rm -f -- "$img"
@@ -74,6 +74,11 @@ find "$TARGET_DIRECTORY" -mindepth 1 -maxdepth 1 -type d -print0 | while IFS= re
         touch "$FORCEGALLERY_PATH"
         echo "Created .forcegallery in $SUBFOLDER"
     fi
+
+    # Recursively remove empty folders inside the subfolder (after zipping and moving files)
+    while find "$SUBFOLDER" -type d -empty | grep -q .; do
+        find "$SUBFOLDER" -type d -empty -delete
+    done
 
 done
 
