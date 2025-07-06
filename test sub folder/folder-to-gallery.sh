@@ -17,9 +17,9 @@ find "." -mindepth 1 -maxdepth 1 -type d -print0 | while IFS= read -r -d '' SUBF
     fi
 done
 
-# Delete the script itself
-SCRIPT_PATH=$(realpath "$0")
-rm -f "$SCRIPT_PATH"
-echo "Deleted script file: $SCRIPT_PATH"
+# # Delete the script itself
+# SCRIPT_PATH=$(realpath "$0")
+# rm -f "$SCRIPT_PATH"
+# echo "Deleted script file: $SCRIPT_PATH"
 
 # Uncomment the above lines to delete the script itself after execution
